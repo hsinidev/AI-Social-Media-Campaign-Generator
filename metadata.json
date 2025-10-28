@@ -1,0 +1,5 @@
+{
+  "name": "AI Social Media Campaign Generator",
+  "description": "An application that uses Gemini to generate a dynamic social media campaign based on user inputs for product, brand voice, and target platforms.",
+  "requestFramePermissions": []
+}
