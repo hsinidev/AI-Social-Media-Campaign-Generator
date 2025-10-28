@@ -1,42 +1,47 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { Card } from './ui/Card';
+import { CopyIcon } from './icons/CopyIcon';
+import { CheckIcon } from './icons/CheckIcon';
 
 interface ContentCardProps {
   icon: React.ReactNode;
   title: string;
-  children: React.ReactNode;
+  content: string | React.ReactNode;
+  copyText?: string;
 }
 
-export const ContentCard: React.FC<ContentCardProps> = ({ icon, title, children }) => {
+export const ContentCard: React.FC<ContentCardProps> = ({ icon, title, content, copyText }) => {
   const [copied, setCopied] = useState(false);
-  // Fix: Use a ref to get the rendered text content of the children, which is safer and more reliable than introspecting props. This resolves the TypeScript errors.
-  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = () => {
-    if (contentRef.current) {
-        navigator.clipboard.writeText(contentRef.current.innerText).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        });
+    const textToCopy = copyText || (typeof content === 'string' ? content : '');
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
     }
   };
 
   return (
-    <div className="bg-slate-800 rounded-lg shadow-xl overflow-hidden">
-      <div className="flex items-center justify-between p-4 bg-slate-700/50 border-b border-slate-700">
+    <Card>
+      <div className="flex justify-between items-start">
         <div className="flex items-center gap-3">
           {icon}
-          <h3 className="text-lg font-bold text-slate-200">{title}</h3>
+          <h3 className="text-lg font-semibold text-gray-200">{title}</h3>
         </div>
-        <button 
-            onClick={handleCopy}
-            className="text-xs bg-slate-600 hover:bg-slate-500 text-slate-300 font-semibold py-1 px-3 rounded-md transition-colors"
+        <button
+          onClick={handleCopy}
+          className="p-2 rounded-md hover:bg-gray-700 text-gray-400 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Copy content"
+          disabled={!copyText && typeof content !== 'string'}
         >
-            {copied ? 'Copied!' : 'Copy'}
+          {copied ? <CheckIcon className="w-5 h-5 text-green-400" /> : <CopyIcon className="w-5 h-5" />}
         </button>
       </div>
-      <div className="p-5" ref={contentRef}>
-        {children}
+      <div className="mt-4 text-gray-300 prose prose-invert prose-sm max-w-none">
+        {typeof content === 'string' ? <p className="whitespace-pre-wrap">{content}</p> : content}
       </div>
-    </div>
+    </Card>
   );
 };

@@ -1,101 +1,81 @@
-// File: components/OutputDisplay.tsx
-// This component renders the final AI-generated results.
-
 import React from 'react';
-import { CampaignOutput } from '../services/geminiService'; // Import the main output type
-
-// Import your UI Card
+import type { CampaignOutput } from '../types';
 import { ContentCard } from './ContentCard';
-
-// Import all your icons (based on your file tree)
 import { TwitterIcon } from './icons/TwitterIcon';
 import { InstagramIcon } from './icons/InstagramIcon';
 import { LinkedInIcon } from './icons/LinkedInIcon';
 import { FacebookIcon } from './icons/FacebookIcon';
 import { QuoraIcon } from './icons/QuoraIcon';
 
-// Define the props it receives from App.tsx
-type OutputDisplayProps = {
-  results: CampaignOutput;
-};
+interface OutputDisplayProps {
+  output: CampaignOutput;
+}
 
-// Helper component to format text with line breaks
-const FormattedText: React.FC<{ text: string }> = ({ text }) => {
-  return (
-    <div className="whitespace-pre-wrap text-white">
-      {text.split('\n').map((line, index) => (
-        <p key={index}>{line}</p>
-      ))}
-    </div>
-  );
-};
-
-export const OutputDisplay: React.FC<OutputDisplayProps> = ({ results }) => {
+export const OutputDisplay: React.FC<OutputDisplayProps> = ({ output }) => {
   return (
     <div className="space-y-6">
-      
-      {/* --- Render Tweets --- */}
-      {results.tweets && results.tweets.length > 0 && (
+      {output.tweets?.length > 0 && (
         <div className="space-y-4">
-          {results.tweets.map((tweet, index) => (
+          {output.tweets.map((tweet, index) => (
             <ContentCard
               key={`tweet-${index}`}
-              icon={<TwitterIcon />}
+              icon={<TwitterIcon className="w-6 h-6 text-sky-400" />}
               title={`Tweet ${index + 1}`}
-            >
-              <FormattedText text={tweet} />
-            </ContentCard>
+              content={tweet}
+            />
           ))}
         </div>
       )}
 
-      {/* --- Render Instagram Posts --- */}
-      {results.instagram_posts && results.instagram_posts.length > 0 && (
+      {output.instagram_posts?.length > 0 && (
         <div className="space-y-4">
-          {results.instagram_posts.map((post, index) => (
+          {output.instagram_posts.map((post, index) => (
             <ContentCard
               key={`insta-${index}`}
-              icon={<InstagramIcon />}
+              icon={<InstagramIcon className="w-6 h-6 text-pink-500" />}
               title={`Instagram Post ${index + 1}`}
-            >
-              <h3 className="font-bold text-gray-300">Image Idea:</h3>
-              <p className="text-sm text-gray-400 mb-2 italic">{post.image_idea}</p>
-              <h3 className="font-bold text-gray-300 mt-2">Caption:</h3>
-              <FormattedText text={post.caption} />
-            </ContentCard>
+              content={
+                <>
+                  <p className="whitespace-pre-wrap">{post.caption}</p>
+                  <p className="mt-4 pt-4 border-t border-gray-700 text-sm text-gray-400">
+                    <strong>Image Idea:</strong> {post.image_idea}
+                  </p>
+                </>
+              }
+              copyText={post.caption}
+            />
           ))}
         </div>
       )}
 
-      {/* --- Render LinkedIn Post (if it exists) --- */}
-      {results.linkedin_post && (
+      {output.linkedin_post && (
         <ContentCard
-          icon={<LinkedInIcon />}
+          icon={<LinkedInIcon className="w-6 h-6 text-blue-500" />}
           title="LinkedIn Post"
-        >
-          <FormattedText text={results.linkedin_post} />
-        </ContentCard>
+          content={output.linkedin_post}
+        />
       )}
 
-      {/* --- Render Facebook Post (if it exists) --- */}
-      {results.facebook_post && (
+      {output.facebook_post && (
         <ContentCard
-          icon={<FacebookIcon />}
+          icon={<FacebookIcon className="w-6 h-6 text-blue-600" />}
           title="Facebook Post"
-        >
-          <FormattedText text={results.facebook_post} />
-        </ContentCard>
+          content={output.facebook_post}
+        />
       )}
 
-      {/* --- Render Quora Answer (if it exists) --- */}
-      {results.quora_answer && (
+      {output.quora_answer && (
         <ContentCard
-          icon={<QuoraIcon />}
+          icon={<QuoraIcon className="w-6 h-6 text-red-600" />}
           title="Quora Answer"
-        >
-          <FormattedText text={results.quora_answer} />
-        </ContentCard>
+          content={output.quora_answer}
+        />
       )}
+      
+      <div className="text-center text-xs text-gray-500 pt-4">
+        <p>Author: {output.author}</p>
+        <p>Powered by: {output.poweredBy}</p>
+      </div>
     </div>
   );
 };

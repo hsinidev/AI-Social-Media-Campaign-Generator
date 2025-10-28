@@ -1,28 +1,14 @@
 import React from 'react';
 
-/**
- * A reusable card component for consistent UI layout.
- */
-export const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={`bg-slate-800 rounded-lg shadow-xl overflow-hidden ${className}`}>
-    {children}
-  </div>
-);
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+}
 
-/**
- * The header section for a Card component.
- */
-export const CardHeader: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={`p-5 border-b border-slate-700 ${className}`}>
-    {children}
-  </div>
-);
-
-/**
- * The main content area for a Card component.
- */
-export const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={`p-5 ${className}`}>
-    {children}
-  </div>
-);
+export const Card: React.FC<CardProps> = ({ children, className = '' }) => {
+  return (
+    <div className={`bg-gray-800/50 border border-gray-700 rounded-xl p-6 shadow-lg backdrop-blur-sm ${className}`}>
+      {children}
+    </div>
+  );
+};

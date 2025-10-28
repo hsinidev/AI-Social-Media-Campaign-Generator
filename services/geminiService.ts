@@ -1,31 +1,9 @@
 // This is your "Waiter" file. It talks to the AI for you.
 // File: services/geminiService.ts
 
-// FIX: Import from '@google/genai' and use GoogleGenAI and Type.
+// Import from '@google/genai' and use GoogleGenAI and Type.
 import { GoogleGenAI, Type } from "@google/genai";
-
-// These are the "inputs" your frontend (CampaignForm.tsx) will send
-export type CampaignSettings = {
-  product_description: string;
-  brand_voice: string;
-  author_name: string;
-  gen_twitter: boolean;
-  gen_instagram: boolean;
-  gen_linkedin: boolean;
-  gen_facebook: boolean;
-  gen_quora: boolean;
-};
-
-// This is the "output" JSON structure the AI will return
-export type CampaignOutput = {
-  author: string;
-  poweredBy: string;
-  tweets: string[];
-  instagram_posts: { caption: string; image_idea: string }[];
-  linkedin_post: string;
-  facebook_post: string;
-  quora_answer: string;
-};
+import type { CampaignSettings, CampaignOutput } from '../types';
 
 // This is the main "Waiter" function your app calls
 export const generateCampaign = async (settings: CampaignSettings): Promise<CampaignOutput> => {
@@ -35,7 +13,7 @@ export const generateCampaign = async (settings: CampaignSettings): Promise<Camp
   if (!process.env.API_KEY) {
     throw new Error('API_KEY environment variable not set.');
   }
-  // FIX: Initialize with an object containing the apiKey as per guidelines.
+  // Initialize with an object containing the apiKey as per guidelines.
   const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
   
   // 2. This is your "System Instruction" for the AI.
@@ -46,20 +24,20 @@ You MUST ONLY generate content for the platforms where the boolean is true.`;
   // 3. This is the user's prompt.
   const user_prompt = `
     Here is the user's request:
-    Product Description: ${settings.product_description}
-    Brand Voice: ${settings.brand_voice}
-    Author: ${settings.author_name}
-    Generate Twitter: ${settings.gen_twitter}
-    Generate Instagram: ${settings.gen_instagram}
-    Generate LinkedIn: ${settings.gen_linkedin}
-    Generate Facebook: ${settings.gen_facebook}
-    Generate Quora: ${settings.gen_quora}
+    Product Description: ${settings.productDescription}
+    Brand Voice: ${settings.brandVoice}
+    Author: ${settings.authorName}
+    Generate Twitter: ${settings.platforms.twitter}
+    Generate Instagram: ${settings.platforms.instagram}
+    Generate LinkedIn: ${settings.platforms.linkedin}
+    Generate Facebook: ${settings.platforms.facebook}
+    Generate Quora: ${settings.platforms.quora}
   `;
 
   try {
     // 4. Call the AI using the new ai.models.generateContent method
     const response = await ai.models.generateContent({
-        // FIX: Use the recommended 'gemini-2.5-flash' model instead of the prohibited 'gemini-1.5-flash'.
+        // Use the recommended 'gemini-2.5-flash' model instead of the prohibited 'gemini-1.5-flash'.
         model: 'gemini-2.5-flash',
         contents: user_prompt,
         config: {
@@ -106,11 +84,13 @@ You MUST ONLY generate content for the platforms where the boolean is true.`;
     const jsonOutput = JSON.parse(text) as CampaignOutput;
     return jsonOutput;
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error calling Gemini API:', error);
     if (error instanceof SyntaxError) {
       throw new Error('Failed to parse the response from the AI. The AI may have returned an invalid JSON format.');
     }
-    throw new Error('An unexpected error occurred while generating the campaign.');
+     // Propagate the actual error message if available
+    const message = error.message || 'An unexpected error occurred while generating the campaign.';
+    throw new Error(message);
   }
 };

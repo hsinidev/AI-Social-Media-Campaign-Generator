@@ -1,93 +1,69 @@
-// File: App.tsx
-// This is the main "controller" for your whole application.
-
 import React, { useState } from 'react';
-import { InputForm } from './components/InputForm'; // Use InputForm
-import { OutputDisplay } from './components/OutputDisplay'; // Use OutputDisplay
-import { Card, CardHeader, CardContent } from './components/ui/Card'; // Your base UI card
-import { generateCampaign, CampaignSettings, CampaignOutput } from './services/geminiService';
+import { InputForm } from './components/InputForm';
+import { OutputDisplay } from './components/OutputDisplay';
+import { SkeletonLoader } from './components/SkeletonLoader';
+import type { CampaignSettings, CampaignOutput } from './types';
+import { generateCampaign } from './services/geminiService';
+import { SparkleIcon } from './components/icons/SparkleIcon';
 
-// This is the main App component
 export const App: React.FC = () => {
-  // State to hold the AI's response
-  const [results, setResults] = useState<CampaignOutput | null>(null);
-  // State to show the loading spinner
+  const [campaignOutput, setCampaignOutput] = useState<CampaignOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  // State to show any errors
   const [error, setError] = useState<string | null>(null);
 
-  // This is the function that the form will call
-  const handleGenerateCampaign = async (settings: CampaignSettings) => {
+  const handleGenerate = async (settings: CampaignSettings) => {
     setIsLoading(true);
     setError(null);
-    setResults(null);
+    setCampaignOutput(null);
 
     try {
-      // Call your "Waiter" service
       const output = await generateCampaign(settings);
-      setResults(output); // Save the results
-    } catch (err: any) {
-      setError(err.message || 'An unknown error occurred.'); // Save any errors
+      setCampaignOutput(output);
+    } catch (e: any) {
+      setError(e.message || 'An unexpected error occurred.');
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 
   return (
-    // Main app container
-    <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
-      <header className="text-center mb-8">
-        <h1 className="text-4xl font-bold">AI Social Media Campaign Generator</h1>
-        <p className="text-lg text-gray-400">by Code Vibe Assistant</p>
-      </header>
+    <div className="bg-gray-900 min-h-screen text-white font-sans">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <header className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <SparkleIcon className="w-8 h-8 text-purple-400" />
+            <h1 className="text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+              Vibe Stack Campaign Generator
+            </h1>
+          </div>
+          <p className="text-gray-400">
+            Your AI Social Media Strategist, powered by Gemini.
+          </p>
+        </header>
 
-      <main className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <main>
+          <InputForm onGenerate={handleGenerate} isLoading={isLoading} />
+          {error && (
+            <div className="mt-6 bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-lg" role="alert">
+              <strong className="font-bold">Oops! </strong>
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+          
+          {isLoading && <SkeletonLoader />}
+          
+          {campaignOutput && !isLoading && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-semibold mb-4 text-center">Your Campaign is Ready!</h2>
+              <OutputDisplay output={campaignOutput} />
+            </div>
+          )}
+        </main>
         
-        {/* Left Side: The Form */}
-        <Card>
-          <CardHeader>
-            <h2 className="text-2xl font-bold text-white">Campaign Brief</h2>
-          </CardHeader>
-          {/* We pass props to InputForm, which now includes CardContent */}
-          <InputForm 
-            onGenerate={handleGenerateCampaign} 
-            isLoading={isLoading} 
-          />
-        </Card>
-
-        {/* Right Side: The Results */}
-        <Card>
-          <CardHeader>
-            <h2 className="text-2xl font-bold text-white">Generated Content</h2>
-          </CardHeader>
-          <CardContent>
-            {/* Show loading spinner, error, or the results */}
-            {isLoading && (
-              <div className="flex flex-col justify-center items-center h-64">
-                <p className="text-lg">Generating your campaign... this may take a moment.</p>
-              </div>
-            )}
-            {error && (
-              <div className="flex justify-center items-center h-64">
-                <p className="text-lg text-red-400">Error: {error}</p>
-              </div>
-            )}
-            {results && !isLoading && !error && (
-              <OutputDisplay results={results} />
-            )}
-            {!results && !isLoading && !error && (
-              <div className="flex justify-center items-center h-64">
-                <p className="text-lg text-gray-500">Your results will appear here.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-
-      {/* Powered By Footer */}
-      <footer className="text-center mt-8 text-gray-500">
-        {results?.poweredBy || "POWERED BY HSINI MOHAMED"}
-      </footer>
+        <footer className="text-center mt-12 text-gray-500 text-sm">
+          <p>Built by a Vibe Coder with Code Vibe Assistant</p>
+        </footer>
+      </div>
     </div>
   );
 };
